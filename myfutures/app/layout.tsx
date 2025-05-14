@@ -1,7 +1,6 @@
 import './globals.css';
-import { Inter } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'] });
+import { inter } from '@/app/ui/fonts';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'Futures ATR Tracker',
@@ -15,11 +14,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} antialiased`}>
         <header className="bg-blue-600 text-white p-4">
-          <h1 className="text-2xl font-bold">Futures ATR Tracker</h1>
-        </header>
-        <main className="container mx-auto p-4">{children}</main>
+          <nav className="flex space-x-6 items-center">
+          <Link href="/" className="text-2xl font-bold hover:underline">
+            나를 위한 선물
+          </Link>
+          <Link href="lotcalculator " className="hover:underline">
+            랏수 계산기
+          </Link>
+          </nav>
+      </header>
+      <main className='p-4'>
+        {children}
+      </main>
       </body>
     </html>
   );

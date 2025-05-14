@@ -1,79 +1,72 @@
+// app/api/futures/route.ts
 import { NextResponse } from 'next/server';
-import { calculateATR, Candle } from '../../lib/calculateATR';
+import { calculateATR } from '../../lib/calculateATR';
+import { Symbol } from '@/app/data/symbol';
+import { convertATRToPoint } from '../../lib/convertATR'; // ATR 변환 함수
+
+function formatDate(d: Date): string {
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const hh = String(d.getUTCHours()).padStart(2, '0');
+  const min = '00';
+  return `${yyyy}-${mm}-${dd}-${hh}:${min}`;
+}
+
+// UTC 시간대의 거래 시간 범위를 가져오는 함수
+function getTradingHourRangeUTC(): { startTime: string; endTime: string } {
+  const now = new Date();
+  const end = new Date(now);
+  end.setUTCMinutes(0, 0, 0);
+
+  const tradingHours: Date[] = [];
+  let temp = new Date(end);
+
+  while (tradingHours.length < 50) { // 여유롭게 확보
+    const day = temp.getUTCDay();
+    if (day !== 0 && day !== 6) {
+      tradingHours.unshift(new Date(temp));
+    }
+    temp.setUTCHours(temp.getUTCHours() - 1);
+  }
+
+  const startTime = formatDate(tradingHours[0]);
+  const endTime = formatDate(tradingHours[tradingHours.length - 1]);
+
+  return { startTime, endTime };
+}
 
 export async function GET() {
-  const symbols = ['US100', 'XAUUSD', 'USOIL', 'EURUSD']; // TraderMade 심볼
+  const { startTime, endTime } = getTradingHourRangeUTC();
   const apiKey = process.env.TRADERMADE_API_KEY;
 
   if (!apiKey) {
-    console.error('API key not configured. Please check TRADERMADE_API_KEY in .env.local');
-    return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
+    console.error('❌ API key is missing');
+    return NextResponse.json({ error: 'API key is missing' }, { status: 500 });
   }
 
-  try {
-    const futuresData = await Promise.all(
-      symbols.map(async (symbol) => {
-        console.log(`Fetching 1-hour data for ${symbol}...`);
-        try {
-          // KST에서 UTC로 변환 (9시간 빼기)
-          const kstNow = new Date();
-          const utcNow = new Date(kstNow.getTime() - 9 * 60 * 60 * 1000); // UTC = KST - 9시간
-          const utcStart = new Date(utcNow.getTime() - 24 * 60 * 60 * 1000); // 24시간 전
+  const results = await Promise.all(
+    Symbol.map(async (symbol) => {
+      const url = `https://marketdata.tradermade.com/api/v1/timeseries?currency=${symbol}&api_key=${apiKey}&start_date=${startTime}&end_date=${endTime}&format=records&interval=hourly`;
 
-          console.log(`KST Time: ${kstNow.toISOString()}, UTC Time: ${utcNow.toISOString()}`);
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const quotes = data?.quotes;
 
-          // YYYY-MM-DD-HH:MM 형식으로 포맷
-          const formattedStartDate = `${utcStart.getFullYear()}-${String(utcStart.getMonth() + 1).padStart(2, '0')}-${String(utcStart.getDate()).padStart(2, '0')}-${String(utcStart.getHours()).padStart(2, '0')}:${String(utcStart.getMinutes()).padStart(2, '0')}`;
-          const formattedEndDate = `${utcNow.getFullYear()}-${String(utcNow.getMonth() + 1).padStart(2, '0')}-${String(utcNow.getDate()).padStart(2, '0')}-${String(utcNow.getHours()).padStart(2, '0')}:${String(utcNow.getMinutes()).padStart(2, '0')}`;
-          
-          const url = `https://marketdata.tradermade.com/api/v1/timeseries?currency=${symbol}&api_key=${apiKey}&start_date=${formattedStartDate}&end_date=${formattedEndDate}&format=records&interval=hourly`;
-          console.log(`Request URL for ${symbol}: ${url}`);
-
-          const timeSeriesResponse = await fetch(url, { cache: 'no-store' });
-          console.log(`HTTP Status for ${symbol}: ${timeSeriesResponse.status}`);
-
-          const timeSeriesData = await timeSeriesResponse.json();
-          console.log(`TraderMade API response for ${symbol}:`, JSON.stringify(timeSeriesData, null, 2));
-
-          if (timeSeriesData.status !== 'success') {
-            console.warn(`Failed to fetch time series for ${symbol}: Status=${timeSeriesData.status}, Error=${timeSeriesData.error || 'Unknown'}`);
-            return {
-              symbol: symbol === 'US100' ? 'NAS100+' : symbol === 'USOIL' ? 'USOUSD+' : symbol + '+',
-              atr: 0,
-              error: `Failed to fetch time series for ${symbol}: ${timeSeriesData.error || 'Unknown'}`,
-            };
-          }
-
-          const candles: Candle[] = timeSeriesData.quotes.map((candle: any) => ({
-            open: Number(candle.open),
-            high: Number(candle.high),
-            low: Number(candle.low),
-            close: Number(candle.close),
-            datetime: candle.date_time,
-          }));
-
-          const atr = calculateATR(candles);
-          console.log(`Calculated ATR for ${symbol}: ${atr}`);
-
-          return {
-            symbol: symbol === 'US100' ? 'NAS100+' : symbol === 'USOIL' ? 'USOUSD+' : symbol + '+',
-            atr,
-          };
-        } catch (error) {
-          console.error(`Error fetching data for ${symbol}:`, error);
-          return {
-            symbol: symbol === 'US100' ? 'NAS100+' : symbol === 'USOIL' ? 'USOUSD+' : symbol + '+',
-            atr: 0,
-            error: `Error fetching data for ${symbol}: ${error.message || 'Unknown'}`,
-          };
+        if (!quotes || quotes.length < 15) {
+          return { symbol, atr: 0, error: 'Not enough data' };
         }
-      })
-    );
 
-    console.log('Futures data response:', JSON.stringify(futuresData, null, 2));
-    return NextResponse.json(futuresData);
-  } catch (error) {
-    console.error('Global error in futures API:', error);
-    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
-  }
+        const atr = calculateATR(quotes.slice(-15));  // ATR 계산
+        const convertedATR = convertATRToPoint(atr, symbol);  // ATR 변환
+
+        return { symbol, atr: convertedATR };  // 변환된 ATR 반환
+      } catch (err: any) {
+        return { symbol, atr: 0, error: 'Fetch failed' };
+      }
+    })
+  );
+
+  return NextResponse.json({ data: results, timestamp: new Date().toISOString() });
 }

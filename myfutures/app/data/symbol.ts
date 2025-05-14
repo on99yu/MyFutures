@@ -1,0 +1,1 @@
+export const Symbol = ['NAS100', 'XAUUSD', 'OIL', 'EURUSD'] as const;
