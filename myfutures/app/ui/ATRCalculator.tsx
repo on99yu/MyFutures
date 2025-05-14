@@ -95,7 +95,7 @@ export default function ATRCalculator() {
           ) : (
             <tr>
               <td colSpan={2} className="border p-2 text-center">
-                "ATR 불러오기" 버튼을 누르세요
+                ATR 불러오기 버튼을 누르세요
               </td>
             </tr>
           )}

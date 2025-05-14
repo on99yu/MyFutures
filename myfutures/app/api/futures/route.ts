@@ -20,7 +20,7 @@ function getTradingHourRangeUTC(): { startTime: string; endTime: string } {
   end.setUTCMinutes(0, 0, 0);
 
   const tradingHours: Date[] = [];
-  let temp = new Date(end);
+  const temp = new Date(end);
 
   while (tradingHours.length < 50) {
     // 여유롭게 확보
@@ -66,8 +66,11 @@ export async function GET() {
         );
 
         return { symbol, atr: value, originalATR: original, converted };
-      } catch (err: any) {
-        return { symbol, atr: 0, error: "Fetch failed" };
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          return { symbol, atr: 0, error: `Fetch failed: ${error.message}` };
+        }
+        return { symbol, atr: 0, error: "Fetch failed: unknown error" };
       }
     })
   );
