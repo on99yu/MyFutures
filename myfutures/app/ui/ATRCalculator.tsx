@@ -1,11 +1,14 @@
 // app/components/ATRCalculator.tsx
-'use client';
-import { useState } from 'react';
+"use client";
+import { useState } from "react";
+import { useATRStore } from "../data/atrStore";
 
 interface FutureData {
   symbol: string;
   atr: number;
   error?: string;
+  originalATR: number;
+  converted?: boolean;
 }
 
 interface ApiResponse {
@@ -14,21 +17,18 @@ interface ApiResponse {
 }
 
 export default function ATRCalculator() {
-  const [futuresData, setFuturesData] = useState<FutureData[]>([]);
+  const { futuresData, updatedAt, setFuturesData } = useATRStore();
   const [loading, setLoading] = useState(false);
-  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
 
   const fetchATR = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/futures', { cache: 'no-store' });
+      const response = await fetch("/api/futures", { cache: "no-store" });
       const result: ApiResponse = await response.json();
-      setFuturesData(result.data);
-      setUpdatedAt(result.timestamp);
+      setFuturesData(result.data, result.timestamp);
     } catch (error) {
-      console.error('Error fetching ATR:', error);
-      setFuturesData([]);
-      setUpdatedAt(null);
+      console.error("Error fetching ATR:", error);
+      setFuturesData([], null);
     } finally {
       setLoading(false);
     }
@@ -36,7 +36,10 @@ export default function ATRCalculator() {
 
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
@@ -45,9 +48,13 @@ export default function ATRCalculator() {
         <button
           onClick={fetchATR}
           disabled={loading}
-          className={`px-4 py-2 rounded ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
+          className={`px-4 py-2 rounded ${
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600"
+          } text-white`}
         >
-          {loading ? 'Loading...' : 'ATR 불러오기'}
+          {loading ? "Loading..." : "ATR 불러오기"}
         </button>
         {updatedAt && (
           <span className="text-sm text-gray-600">
@@ -68,7 +75,21 @@ export default function ATRCalculator() {
             futuresData.map((future) => (
               <tr key={future.symbol}>
                 <td className="border p-2">{future.symbol}</td>
-                <td className="border p-2">{future.error ? `Error: ${future.error}` : future.atr}</td>
+                <td className="border p-2">
+                  {future.error ? (
+                    `Error: ${future.error}`
+                  ) : future.converted ? (
+                    <>
+                      <span className="bold-2">{future.atr}</span>
+                      <span className="text-ts"> pts</span>
+                      <span className="text-ts text-gray-500">
+                        ({future.originalATR.toFixed(4)})
+                      </span>
+                    </>
+                  ) : (
+                    `${future.atr} pts`
+                  )}
+                </td>
               </tr>
             ))
           ) : (

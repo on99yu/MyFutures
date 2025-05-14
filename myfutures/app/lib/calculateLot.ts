@@ -9,19 +9,23 @@ export const calculateLot = ({
   atr: number;
   targetReturnPercent: number;
 }): number => {
+  if (atr <= 0 || margin <= 0 || targetReturnPercent <= 0) return 0;
+
   const targetProfit = margin * (targetReturnPercent / 100);
-  if (atr === 0) return 0;
 
-  if (symbol === "NAS100") {
-    if (atr === 0) return 0;
-    const lotSize = targetProfit / atr;
-    return parseFloat(lotSize.toFixed(2));
-  }
+  // symbol별 multiplier 설정
+  const symbolMultipliers: { [key: string]: number } = {
+    NAS100: 1,
+    OIL: 1,
+    XAUUSD: 100,     // (targetProfit / atr) * 0.01 → multiplier = 1 / 0.01 = 100
+    EURUSD: 10,
+  };
 
-  if (symbol === "OIL") {
-    const lotSize = (targetProfit * 0.01) / atr;
-    return parseFloat(lotSize.toFixed(2));
-  }
+  const multiplier = symbolMultipliers[symbol];
 
-  return 0;
+  if (!multiplier) return 0;
+
+  const lotSize = targetProfit / (atr * multiplier);
+
+  return parseFloat(lotSize.toFixed(2));
 };

@@ -60,14 +60,13 @@ const LotCalculator = () => {
         </label>
         <input
           type="text"
+          min="0"
           inputMode="decimal"
-          pattern="[0-9]*\.?[0-9]+" // 숫자와 선택적 소수점만 허용
           value={atr === 0 ? "" : atr}
           onChange={(e) => {
-            const input = e.target.value;
-            // 정규식으로 숫자와 점만 허용
-            if (/^[0-9]*\.?[0-9]*$/.test(input)) {
-              setAtr(input === "" ? 0 : Number(input));
+            const value = Number(e.target.value);
+            if (!isNaN(value) && value >= 0) {
+              setAtr(value);
             }
           }}
           className="w-full p-2 border rounded-md"
@@ -81,10 +80,16 @@ const LotCalculator = () => {
         </label>
         <input
           type="text"
+          min="0"
           inputMode="decimal"
           pattern="[0-9]*"
-          value={targetReturn}
-          onChange={(e) => setTargetReturn(Number(e.target.value) || 0)}
+          value={targetReturn === 0 ? "" : targetReturn}
+          onChange={(e) => {
+            const value = Number(e.target.value);
+            if (!isNaN(value) && value >= 0) {
+              setTargetReturn(value);
+            }
+          }}
           className="w-full p-2 border rounded-md"
           placeholder="Enter target return"
         />

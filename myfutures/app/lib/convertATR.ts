@@ -1,9 +1,8 @@
-export const convertATRToPoint = (atr: number, symbol: string): number => {
-  let convertedATR = atr;
-  if (symbol === 'EURUSD') {
-    convertedATR = atr * 10000;  // EURUSD는 0.0001 단위로 변환
-  } else if (symbol === 'OIL') {
-    convertedATR = atr * 100;    // OIL은 0.01 단위로 변환
+export function convertATRToPoint(atr: number, symbol: string): { value: number, original: number, converted: boolean } {
+  if (symbol === 'OIL') {
+    return { value: Math.round(atr * 100), original: atr, converted: true }; // 0.3 → 30
+  } else if (symbol === 'EURUSD') {
+    return { value: Math.round(atr * 10000), original: atr, converted: true }; // 0.0010 → 10
   }
-  return convertedATR;
-};
+  return { value: parseFloat(atr.toFixed(1)), original: atr, converted: false }; // 그대로 사용
+}

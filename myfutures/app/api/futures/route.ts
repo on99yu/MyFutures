@@ -1,15 +1,15 @@
 // app/api/futures/route.ts
-import { NextResponse } from 'next/server';
-import { calculateATR } from '../../lib/calculateATR';
-import { Symbol } from '@/app/data/symbol';
-import { convertATRToPoint } from '../../lib/convertATR'; // ATR 변환 함수
+import { NextResponse } from "next/server";
+import { calculateATR } from "../../lib/calculateATR";
+import { Symbol } from "@/app/data/symbol";
+import { convertATRToPoint } from "../../lib/convertATR"; // ATR 변환 함수
 
 function formatDate(d: Date): string {
   const yyyy = d.getUTCFullYear();
-  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(d.getUTCDate()).padStart(2, '0');
-  const hh = String(d.getUTCHours()).padStart(2, '0');
-  const min = '00';
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const min = "00";
   return `${yyyy}-${mm}-${dd}-${hh}:${min}`;
 }
 
@@ -22,7 +22,8 @@ function getTradingHourRangeUTC(): { startTime: string; endTime: string } {
   const tradingHours: Date[] = [];
   let temp = new Date(end);
 
-  while (tradingHours.length < 50) { // 여유롭게 확보
+  while (tradingHours.length < 50) {
+    // 여유롭게 확보
     const day = temp.getUTCDay();
     if (day !== 0 && day !== 6) {
       tradingHours.unshift(new Date(temp));
@@ -41,8 +42,8 @@ export async function GET() {
   const apiKey = process.env.TRADERMADE_API_KEY;
 
   if (!apiKey) {
-    console.error('❌ API key is missing');
-    return NextResponse.json({ error: 'API key is missing' }, { status: 500 });
+    console.error("❌ API key is missing");
+    return NextResponse.json({ error: "API key is missing" }, { status: 500 });
   }
 
   const results = await Promise.all(
@@ -55,18 +56,24 @@ export async function GET() {
         const quotes = data?.quotes;
 
         if (!quotes || quotes.length < 15) {
-          return { symbol, atr: 0, error: 'Not enough data' };
+          return { symbol, atr: 0, error: "Not enough data" };
         }
 
-        const atr = calculateATR(quotes.slice(-15));  // ATR 계산
-        const convertedATR = convertATRToPoint(atr, symbol);  // ATR 변환
+        const atrRaw = calculateATR(quotes.slice(-15));
+        const { value, original, converted } = convertATRToPoint(
+          atrRaw,
+          symbol
+        );
 
-        return { symbol, atr: convertedATR };  // 변환된 ATR 반환
+        return { symbol, atr: value, originalATR: original, converted };
       } catch (err: any) {
-        return { symbol, atr: 0, error: 'Fetch failed' };
+        return { symbol, atr: 0, error: "Fetch failed" };
       }
     })
   );
 
-  return NextResponse.json({ data: results, timestamp: new Date().toISOString() });
+  return NextResponse.json({
+    data: results,
+    timestamp: new Date().toISOString(),
+  });
 }
