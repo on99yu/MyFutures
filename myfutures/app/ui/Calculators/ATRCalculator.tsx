@@ -1,7 +1,6 @@
-// app/components/ATRCalculator.tsx
 "use client";
 import { useState } from "react";
-import { useATRStore } from "../data/atrStore";
+import { useATRStore } from "@/app/data/atrStore";
 
 interface FutureData {
   symbol: string;
@@ -43,7 +42,9 @@ export default function ATRCalculator() {
   };
 
   return (
-    <div>
+    <div className="p-4 border rounded-md shadow-lg max-w-md mx-auto">
+      <h2 className="text-xl font-bold mb-4">ATR 계산기</h2>
+
       <div className="flex items-center gap-4 mb-4">
         <button
           onClick={fetchATR}
@@ -63,7 +64,7 @@ export default function ATRCalculator() {
         )}
       </div>
 
-      <table className="w-full border-collapse border mb-8">
+      <table className="w-full border-collapse border">
         <thead>
           <tr className="bg-gray-200">
             <th className="border p-2">종목</th>
@@ -80,21 +81,24 @@ export default function ATRCalculator() {
                     `Error: ${future.error}`
                   ) : future.converted ? (
                     <>
-                      <span className="bold-2">{future.atr}</span>
-                      <span className="text-ts"> pts</span>
-                      <span className="text-ts text-gray-500">
+                      <span className=" text-blue-600">{future.atr}</span>
+                      <span className="ml-1 text-sm text-gray-600">pts</span>
+                      <span className="ml-2 text-sm text-gray-400">
                         ({future.originalATR.toFixed(4)})
                       </span>
                     </>
                   ) : (
-                    `${future.atr} pts`
+                    <>
+                    <span className=" text-blue-600" >{future.atr}</span>
+                    <span className="ml-1 text-sm text-gray-600">pts</span>
+                    </>
                   )}
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={2} className="border p-2 text-center">
+              <td colSpan={2} className="border p-2 text-center text-gray-600">
                 ATR 불러오기 버튼을 누르세요
               </td>
             </tr>

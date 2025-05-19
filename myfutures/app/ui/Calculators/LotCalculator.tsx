@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Symbol } from "../data/symbol";
-import { calculateLot } from "../lib/calculateLot"; // 위치에 맞게 경로 수정하세요
+import { Symbol, SymbolData } from "@/app/data/symbol";
+import { calculateLot } from "@/app/lib/calculateLot";
 
 const LotCalculator = () => {
   const [margin, setMargin] = useState(1000);
@@ -20,6 +20,21 @@ const LotCalculator = () => {
     setLotResult(result);
   };
 
+  // 선택된 종목의 수수료 조회
+  const getCommissionPerLot = (symbolName: string): number => {
+    const symbol = Symbol.find((s: SymbolData) => s.name === symbolName);
+    return symbol ? symbol.commissionPerLot : 0;
+  };
+
+  // 수수료 계산 (랏수 * 1랏당 수수료)
+  const commission = lotResult !== null ? lotResult * getCommissionPerLot(selectedSymbol) : 0;
+
+  // 목표 수익 계산 (증거금 * 목표 수익률 / 100)
+  const targetProfit = lotResult !== null ? (margin * targetReturn) / 100 : 0;
+
+  // 수수료 포함 목표 수익 (목표 수익 + 수수료)
+  const totalProfitWithCommission = lotResult !== null ? targetProfit + commission : 0;
+
   return (
     <div className="p-4 border rounded-md shadow-lg max-w-md mx-auto">
       <h2 className="text-xl font-bold mb-4">랏수 계산기</h2>
@@ -31,9 +46,9 @@ const LotCalculator = () => {
           onChange={(e) => setSelectedSymbol(e.target.value)}
           className="w-full p-2 border rounded-md"
         >
-          {Symbol.map((symbol) => (
-            <option key={symbol} value={symbol}>
-              {symbol}
+          {Symbol.map((symbol: SymbolData) => (
+            <option key={symbol.name} value={symbol.name}>
+              {symbol.name}
             </option>
           ))}
         </select>
@@ -50,7 +65,7 @@ const LotCalculator = () => {
             setMargin(e.target.value === "" ? 0 : Number(e.target.value))
           }
           className="w-full p-2 border rounded-md"
-          placeholder="Enter margin"
+          placeholder="증거금을 입력하세요"
         />
       </div>
 
@@ -70,7 +85,7 @@ const LotCalculator = () => {
             }
           }}
           className="w-full p-2 border rounded-md"
-          placeholder="Enter ATR"
+          placeholder="ATR을 입력하세요"
         />
       </div>
 
@@ -91,7 +106,7 @@ const LotCalculator = () => {
             }
           }}
           className="w-full p-2 border rounded-md"
-          placeholder="Enter target return"
+          placeholder="목표 수익률을 입력하세요"
         />
       </div>
 
@@ -104,7 +119,15 @@ const LotCalculator = () => {
 
       {lotResult !== null && (
         <div className="text-center text-lg font-bold">
-          계산된 랏수: <span className="text-blue-600">{lotResult}</span>
+          <div>
+            계산된 랏수: <span className="text-blue-600">{lotResult.toFixed(2)}</span>
+            <span className="ml-2">
+              (수수료: ${commission.toFixed(2)})
+            </span>
+          </div>
+          <div className="mt-2">
+            수수료 포함 목표 수익: <span className="text-blue-600">${totalProfitWithCommission.toFixed(2)}</span>
+          </div>
         </div>
       )}
     </div>

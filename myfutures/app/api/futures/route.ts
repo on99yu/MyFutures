@@ -1,7 +1,6 @@
-// app/api/futures/route.ts
 import { NextResponse } from "next/server";
 import { calculateATR } from "../../lib/calculateATR";
-import { Symbol } from "@/app/data/symbol";
+import { Symbol, SymbolData } from "@/app/data/symbol";
 import { convertATRToPoint } from "../../lib/convertATR"; // ATR 변환 함수
 
 function formatDate(d: Date): string {
@@ -47,8 +46,8 @@ export async function GET() {
   }
 
   const results = await Promise.all(
-    Symbol.map(async (symbol) => {
-      const url = `https://marketdata.tradermade.com/api/v1/timeseries?currency=${symbol}&api_key=${apiKey}&start_date=${startTime}&end_date=${endTime}&format=records&interval=hourly`;
+    Symbol.map(async (symbol: SymbolData) => {
+      const url = `https://marketdata.tradermade.com/api/v1/timeseries?currency=${symbol.name}&api_key=${apiKey}&start_date=${startTime}&end_date=${endTime}&format=records&interval=hourly`;
 
       try {
         const res = await fetch(url);
@@ -56,21 +55,21 @@ export async function GET() {
         const quotes = data?.quotes;
 
         if (!quotes || quotes.length < 15) {
-          return { symbol, atr: 0, error: "Not enough data" };
+          return { symbol: symbol.name, atr: 0, error: "Not enough data" };
         }
 
         const atrRaw = calculateATR(quotes.slice(-15));
         const { value, original, converted } = convertATRToPoint(
           atrRaw,
-          symbol
+          symbol.name
         );
 
-        return { symbol, atr: value, originalATR: original, converted };
+        return { symbol: symbol.name, atr: value, originalATR: original, converted };
       } catch (error: unknown) {
         if (error instanceof Error) {
-          return { symbol, atr: 0, error: `Fetch failed: ${error.message}` };
+          return { symbol: symbol.name, atr: 0, error: `Fetch failed: ${error.message}` };
         }
-        return { symbol, atr: 0, error: "Fetch failed: unknown error" };
+        return { symbol: symbol.name, atr: 0, error: "Fetch failed: unknown error" };
       }
     })
   );
