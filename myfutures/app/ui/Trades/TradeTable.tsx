@@ -12,11 +12,11 @@ export default function TradeTable({ trades }: TradeTableProps) {
         <thead>
           <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
             <th className="py-3 px-6 text-left">진입시간</th>
-            <th className="py-3 px-6 text-left">청산날짜</th>
             <th className="py-3 px-6 text-left">종목</th>
             <th className="py-3 px-6 text-left">포지션</th>
-            <th className="py-3 px-6 text-left">수익</th>
             <th className="py-3 px-6 text-left">근거</th>
+            <th className="py-3 px-6 text-left">수익</th>
+            <th className="py-3 px-6 text-left">청산날짜</th>
           </tr>
         </thead>
         <tbody className="text-gray-600 text-sm font-light">
@@ -24,12 +24,8 @@ export default function TradeTable({ trades }: TradeTableProps) {
             trades.map((trade, index) => (
               <tr key={index} className="border-b border-gray-200 hover:bg-gray-100">
                 <td className="py-3 px-6 text-left">{trade.entryTime}</td>
-                <td className="py-3 px-6 text-left">{trade.exitDate}</td>
                 <td className="py-3 px-6 text-left">{trade.symbol}</td>
                 <td className="py-3 px-6 text-left">{trade.position}</td>
-                <td className={`py-3 px-6 text-left ${trade.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {trade.profit >= 0 ? `+$${trade.profit}` : `-$${Math.abs(trade.profit)}`}
-                </td>
                 <td className="py-3 px-6 text-left">
                   <div className="flex flex-wrap gap-2">
                     {trade.reasons.map((reason, i) => (
@@ -39,6 +35,10 @@ export default function TradeTable({ trades }: TradeTableProps) {
                     ))}
                   </div>
                 </td>
+                <td className={`py-3 px-6 text-left ${trade.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {trade.profit >= 0 ? `+$${trade.profit}` : `-$${Math.abs(trade.profit)}`}
+                </td>
+                <td className="py-3 px-6 text-left">{trade.exitDate}</td>
               </tr>
             ))
           ) : (

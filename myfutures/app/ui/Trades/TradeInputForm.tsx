@@ -86,7 +86,7 @@ export default function TradeInputForm({ trades, onAddTrade }: TradeInputFormPro
                 <td className="py-2 px-3 text-left">{index + 1}</td>
                 <td className="py-2 px-3 text-left whitespace-nowrap">{trade.entryTime}</td>
                 <td className="py-2 px-3 text-left">{trade.symbol}</td>
-                <td className="py-2 px-3 text-left">{trade.position}</td>
+                <td className="py-2 px-3 w-10text-left">{trade.position}</td>
                 <td className="py-2 px-3 w-100 text-left">
                   <div className="flex flex-wrap gap-2 max-w-64 h-16 overflow-hidden">
                     {trade.reasons.map((reason, i) => (

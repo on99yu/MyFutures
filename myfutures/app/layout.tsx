@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
         <header className="bg-blue-600 text-white p-6 pl-16">
-          <nav className="flex space-x-6 gap-6 items-center">
+          <nav className="relative flex space-x-6 gap-6 items-center">
           <Link href="/" className="text-2xl font-bold hover:underline">
             나를 위한 선물
           </Link>
@@ -26,9 +26,12 @@ export default function RootLayout({
           <Link href="trades" className="hover:underline">
             트레이딩 메모리
           </Link>
+          <Link href="login" className="absolute hover:underline right-16">
+            로그인
+          </Link>
           </nav>
       </header>
-      <main className='p-4'>
+      <main className='w-full p-4'>
         {children}
       </main>
       </body>
