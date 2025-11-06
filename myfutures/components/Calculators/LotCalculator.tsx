@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Symbol, SymbolData } from "@/app/data/symbol";
-import { calculateLot } from "@/app/lib/calculateLot";
+import { Symbol, SymbolData } from "@/data/symbol";
+import { calculateLot } from "@/lib/calculateLot";
 
 const LotCalculator = () => {
   const [margin, setMargin] = useState(1000);

@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { tradingData as initialData, Trade } from '@/app/data/tradingDataDummy';
-import TradeTable from '@/app/ui/Trades/TradeTable';
-import DateSelector from '@/app/ui/Trades/DateSelector';
-import TradeInputForm from '@/app/ui/Trades/TradeInputForm';
+import { tradingData as initialData, Trade } from '@/data/tradingDataDummy';
+import TradeTable from '@/components/Trades/TradeTable';
+import DateSelector from '@/components/Trades/DateSelector';
+import TradeInputForm from '@/components/Trades/TradeInputForm';
 
 export default function TradingLog() {
   const [viewMode, setViewMode] = useState<'input' | 'history'>('input');

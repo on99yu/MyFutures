@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Trade } from '@/app/data/tradingDataDummy';
-import { Symbol } from '@/app/data/symbol';
+import { Trade } from '@/data/tradingDataDummy';
+import { Symbol } from '@/data/symbol';
 
 interface TradeInputFormProps {
   trades: Trade[];

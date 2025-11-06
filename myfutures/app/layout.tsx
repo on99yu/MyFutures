@@ -1,5 +1,4 @@
-import './globals.css';
-import { inter } from '@/app/ui/fonts';
+import 'styles/globals.css';
 import Link from 'next/link';
 
 export const metadata = {
@@ -14,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>
+      <body className={`w-full`}>
         <header className="bg-blue-600 text-white p-6 pl-16">
           <nav className="relative flex space-x-6 gap-6 items-center">
           <Link href="/" className="text-2xl font-bold hover:underline">

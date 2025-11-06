@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useATRStore } from "@/app/data/atrStore";
+import { useATRStore } from "@/data/atrStore";
 
 interface FutureData {
   symbol: string;

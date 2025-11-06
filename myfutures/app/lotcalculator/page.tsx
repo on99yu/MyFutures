@@ -1,7 +1,7 @@
 
-import LotCalculator from '@/app/ui/Calculators/LotCalculator';
-import ATRCalculator from '@/app/ui/Calculators/ATRCalculator';
-import LotCommissionCalculator from '../ui/Calculators/CommisionCalculator';
+import LotCalculator from '@/components/Calculators/LotCalculator';
+import ATRCalculator from '@/components/Calculators/ATRCalculator';
+import LotCommissionCalculator from '../../components/Calculators/CommisionCalculator';
 export default function Page() {
   return (
     <div className="flex flex-row items-start min-h-screen

@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
-import { calculateATR } from "../../lib/calculateATR";
-import { Symbol, SymbolData } from "@/app/data/symbol";
-import { convertATRToPoint } from "../../lib/convertATR"; // ATR 변환 함수
+import { calculateATR } from "../../../lib/calculateATR";
+import { Symbol, SymbolData } from "@/data/symbol";
+import { convertATRToPoint } from "../../../lib/convertATR"; // ATR 변환 함수
+
+
+// 종목별 1시간봉 데이터 API 호출
+// 리턴 : 데이터, 호출 시간
 
 function formatDate(d: Date): string {
   const yyyy = d.getUTCFullYear();
@@ -12,7 +16,6 @@ function formatDate(d: Date): string {
   return `${yyyy}-${mm}-${dd}-${hh}:${min}`;
 }
 
-// UTC 시간대의 거래 시간 범위를 가져오는 함수
 function getTradingHourRangeUTC(): { startTime: string; endTime: string } {
   const now = new Date();
   const end = new Date(now);
@@ -22,7 +25,6 @@ function getTradingHourRangeUTC(): { startTime: string; endTime: string } {
   const temp = new Date(end);
 
   while (tradingHours.length < 50) {
-    // 여유롭게 확보
     const day = temp.getUTCDay();
     if (day !== 0 && day !== 6) {
       tradingHours.unshift(new Date(temp));
